@@ -1,0 +1,121 @@
+version: '3.8'
+
+services:
+  # MySQL Database Service
+  mysql:
+    image: mysql:8.0
+    container_name: toyota-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_password}
+      MYSQL_DATABASE: ${DB_NAME:-toyota_db}
+      MYSQL_USER: ${DB_USER:-toyota_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-toyota_password}
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_unicode_ci
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      # Mount schema.sql to initialize database
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      # Persist database data
+      - mysql_data:/var/lib/mysql
+      # Mount init scripts if needed
+      - ./database/scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u${DB_USER:-toyota_user}", "-p${DB_PASSWORD:-toyota_password}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - toyota-network
+    restart: unless-stopped
+    command: 
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --max_connections=1000
+
+  # Backend FastAPI Service
+  backend:
+    build:
+      context: .
+      dockerfile: Backend/Dockerfile
+    container_name: toyota-backend
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-toyota_user}
+      DB_PASSWORD: ${DB_PASSWORD:-toyota_password}
+      DB_NAME: ${DB_NAME:-toyota_db}
+      PYTHONUNBUFFERED: 1
+      PYTHONDONTWRITEBYTECODE: 1
+      CONVERTAPI_TOKEN: ${CONVERTAPI_TOKEN:-your_token_here}
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      # Mount upload and cleaned directories for persistence
+      - ./Backend/uploads:/app/Backend/uploads
+      - ./Backend/cleaned_files:/app/Backend/cleaned_files
+      - ./Backend/logs:/app/Backend/logs
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - toyota-network
+    restart: unless-stopped
+    command: uvicorn Backend.main:app --host 0.0.0.0 --port 8000
+
+  # Frontend Next.js Service
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: toyota-frontend
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      API_URL: ${API_URL:-http://backend:8000}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - toyota-network
+    restart: unless-stopped
+
+  # Optional: PhpMyAdmin for Database Management
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: toyota-phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: ${DB_USER:-toyota_user}
+      PMA_PASSWORD: ${DB_PASSWORD:-toyota_password}
+      PMA_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_password}
+    ports:
+      - "${PHPMYADMIN_PORT:-8080}:80"
+    depends_on:
+      - mysql
+    networks:
+      - toyota-network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  toyota-network:
+    driver: bridge

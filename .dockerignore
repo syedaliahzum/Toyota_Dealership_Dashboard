@@ -1,0 +1,119 @@
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Node modules and build artifacts
+node_modules
+npm-debug.log
+yarn-error.log
+.next
+out
+dist
+build
+
+# Python files
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv
+env
+ENV
+.venv
+
+# IDE and Editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+.env
+.env.local
+.env.*.local
+
+# Testing and coverage
+.pytest_cache
+.coverage
+htmlcov
+.tox
+.hypothesis
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.circleci
+
+# Documentation
+docs
+*.md
+!README.md
+
+# Docker files (not needed in image)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# OS files
+*.log
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+.tmp
+
+# Database files (don't include in image, use volumes)
+*.db
+*.sqlite
+*.sqlite3
+mysql_data
+
+# Cache files
+.cache
+.pytest_cache
+.tox
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
+
+# Node modules cache
+.npm
+package-lock.json
+
+# Yarn cache
+yarn.lock
+
+# Frontend build outputs
+.vercel
+out/
+
+# Database backups
+*.sql.bak
+backups/

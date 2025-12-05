@@ -1,0 +1,27 @@
+# Database operations and MySQL connectivity
+mysql-connector-python==8.2.0
+
+# Data processing
+pandas==2.2.0
+openpyxl==3.1.2  # Excel file support for XLSX format
+
+# Date/Time utilities
+python-dateutil>=2.8.2
+pytz>=2023.3
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# Additional dependencies
+numpy>=1.26.0,<2.0.0
+typing-extensions>=4.0.0
+
+# REQUIREMENTS:
+# 1. Python 3.8+ is required
+# 2. MySQL database server running and accessible
+# 3. Create .env file in database directory or Toyota root with:
+#    DB_HOST=your_host
+#    DB_USER=your_user
+#    DB_PASSWORD=your_password
+#    DB_NAME=your_database
+#    DB_POOL_SIZE=10 (optional, defaults to 10)
